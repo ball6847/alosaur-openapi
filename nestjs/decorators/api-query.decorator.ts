@@ -1,21 +1,21 @@
 // deno-lint-ignore-file ban-types no-explicit-any
-import { omit } from "../../deps/midash.ts";
+import { omit } from '../../deps/midash.ts';
 import {
   ParameterObject,
   ReferenceObject,
   SchemaObject,
-} from "../interfaces/open-api-spec.interface.ts";
-import { Type } from "../interfaces/type.interface.ts";
-import { SwaggerEnumType } from "../types/swagger-enum.type.ts";
+} from '../interfaces/open-api-spec.interface.ts';
+import { Type } from '../interfaces/type.interface.ts';
+import { SwaggerEnumType } from '../types/swagger-enum.type.ts';
 import {
   addEnumArraySchema,
   addEnumSchema,
   isEnumArray,
   isEnumDefined,
-} from "../utils/enum.utils.ts";
-import { createParamDecorator, getTypeIsArrayTuple } from "./helpers.ts";
+} from '../utils/enum.utils.ts';
+import { createParamDecorator, getTypeIsArrayTuple } from './helpers.ts';
 
-type ParameterOptions = Omit<ParameterObject, "in" | "schema" | "name">;
+type ParameterOptions = Omit<ParameterObject, 'in' | 'schema' | 'name'>;
 
 interface ApiQueryMetadata extends ParameterOptions {
   name?: string;
@@ -33,7 +33,7 @@ interface ApiQuerySchemaHost extends ParameterOptions {
 export type ApiQueryOptions = ApiQueryMetadata | ApiQuerySchemaHost;
 
 const defaultQueryOptions: ApiQueryOptions = {
-  name: "",
+  name: '',
   required: true,
 };
 
@@ -45,8 +45,8 @@ export function ApiQuery(options: ApiQueryOptions): MethodDecorator {
   );
   const param: ApiQueryMetadata & Record<string, any> = {
     name: options.name == null ? defaultQueryOptions.name : options.name,
-    in: "query",
-    ...omit(options, ["enum"]),
+    in: 'query',
+    ...omit(options, ['enum']),
     type,
   };
 

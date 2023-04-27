@@ -1,28 +1,28 @@
 // deno-lint-ignore-file ban-types no-unused-vars no-explicit-any
-import { Reflect } from "../../deps/alosaur.ts";
-import { omit } from "../../deps/midash.ts";
-import { DECORATORS } from "../constants.ts";
-import { HttpStatus } from "../http-status.enum.ts";
+import { Reflect } from '../../deps/alosaur.ts';
+import { omit } from '../../deps/midash.ts';
+import { DECORATORS } from '../constants.ts';
+import { HttpStatus } from '../http-status.enum.ts';
 import {
   ReferenceObject,
   ResponseObject,
   SchemaObject,
-} from "../interfaces/open-api-spec.interface.ts";
-import { Type } from "../interfaces/type.interface.ts";
-import { getTypeIsArrayTuple } from "./helpers.ts";
+} from '../interfaces/open-api-spec.interface.ts';
+import { Type } from '../interfaces/type.interface.ts';
+import { getTypeIsArrayTuple } from './helpers.ts';
 
 export interface ApiResponseMetadata
-  extends Omit<ResponseObject, "description"> {
-  status?: number | "default" | "1XX" | "2XX" | "3XX" | "4XX" | "5XX";
+  extends Omit<ResponseObject, 'description'> {
+  status?: number | 'default' | '1XX' | '2XX' | '3XX' | '4XX' | '5XX';
   type?: Type<unknown> | Function | [Function] | string;
   isArray?: boolean;
   description?: string;
 }
 
 export interface ApiResponseSchemaHost
-  extends Omit<ResponseObject, "description"> {
+  extends Omit<ResponseObject, 'description'> {
   schema: SchemaObject & Partial<ReferenceObject>;
-  status?: number | "default" | "1XX" | "2XX" | "3XX" | "4XX" | "5XX";
+  status?: number | 'default' | '1XX' | '2XX' | '3XX' | '4XX' | '5XX';
   description?: string;
 }
 
@@ -38,10 +38,10 @@ export function ApiResponse(
 
   (options as ApiResponseMetadata).type = type;
   (options as ApiResponseMetadata).isArray = isArray;
-  options.description = options.description ? options.description : "";
+  options.description = options.description ? options.description : '';
 
   const groupedMetadata = {
-    [options.status || "default"]: omit(options, ["status"]),
+    [options.status || 'default']: omit(options, ['status']),
   };
   return (
     target: object,
@@ -238,5 +238,5 @@ export const ApiUnsupportedMediaTypeResponse = (
 export const ApiDefaultResponse = (options: ApiResponseOptions = {}) =>
   ApiResponse({
     ...options,
-    status: "default",
+    status: 'default',
   });

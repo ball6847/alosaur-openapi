@@ -96,15 +96,15 @@ export interface ExternalDocumentationObject {
   url: string;
 }
 
-export type ParameterLocation = "query" | "header" | "path" | "cookie";
+export type ParameterLocation = 'query' | 'header' | 'path' | 'cookie';
 export type ParameterStyle =
-  | "matrix"
-  | "label"
-  | "form"
-  | "simple"
-  | "spaceDelimited"
-  | "pipeDelimited"
-  | "deepObject";
+  | 'matrix'
+  | 'label'
+  | 'form'
+  | 'simple'
+  | 'spaceDelimited'
+  | 'pipeDelimited'
+  | 'deepObject';
 
 export interface BaseParameterObject {
   description?: string;
@@ -250,7 +250,7 @@ export interface XmlObject {
   wrapped?: boolean;
 }
 
-export type SecuritySchemeType = "apiKey" | "http" | "oauth2" | "openIdConnect";
+export type SecuritySchemeType = 'apiKey' | 'http' | 'oauth2' | 'openIdConnect';
 
 export interface SecuritySchemeObject {
   type: SecuritySchemeType;

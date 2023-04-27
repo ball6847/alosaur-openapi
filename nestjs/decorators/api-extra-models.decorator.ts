@@ -1,6 +1,6 @@
 // deno-lint-ignore-file ban-types no-explicit-any
-import { Reflect } from "../../deps/alosaur.ts";
-import { DECORATORS } from "../constants.ts";
+import { Reflect } from '../../deps/alosaur.ts';
+import { DECORATORS } from '../constants.ts';
 
 export function ApiExtraModels(...models: Function[]) {
   return (

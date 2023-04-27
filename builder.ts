@@ -15,20 +15,22 @@ import {
   OpenApiBuilder,
   OpenAPIObject,
   OperationObject,
+  ParameterObject,
   ParamType,
   ParsedNamesDocMap,
   PathItemObject,
   registerAreas,
   registerControllers,
   RouteMetadata,
+  SecuritySchemeObject,
   ServerObject,
-} from "./deps/alosaur.ts";
-import {
-  buildSchemaObject,
-  exploreClassTags,
-  explorePropertyTags,
-  exploreResponses,
-} from "./route_metadata_explorer.ts";
+} from './deps/alosaur.ts';
+import { exploreOperation } from './explorer/operation.ts';
+import { exploreParameters } from './explorer/parameters.ts';
+import { exploreResponses } from './explorer/responses.ts';
+import { exploreSecurity } from './explorer/security.ts';
+import { exploreClassTags, explorePropertyTags } from './explorer/tags.ts';
+import { buildSchemaObject } from './explorer/utils/schema_object.ts';
 
 /**
  * For testing this builder use this editor:
@@ -78,12 +80,12 @@ export class AlosaurOpenApiBuilder<T> {
     return this.builder.getSpec();
   }
 
-  public saveToFile(path = "./openapi.json"): AlosaurOpenApiBuilder<T> {
+  public saveToFile(path = './openapi.json'): AlosaurOpenApiBuilder<T> {
     Deno.writeTextFileSync(path, JSON.stringify(this.getSpec()));
     return this;
   }
 
-  public saveDenoDocs(path = "./docs.json"): AlosaurOpenApiBuilder<T> {
+  public saveDenoDocs(path = './docs.json'): AlosaurOpenApiBuilder<T> {
     Deno.writeTextFileSync(path, JSON.stringify(this.denoDocs));
     return this;
   }
@@ -101,19 +103,33 @@ export class AlosaurOpenApiBuilder<T> {
 
     const controllerClassName: string = route.target.constructor.name;
 
-    // explore tags from @ApiTags() decorator
-    const tags = [...exploreClassTags(route), ...explorePropertyTags(route)];
-
+    const operation: OperationObject = exploreOperation(route);
+    const classTags = exploreClassTags(route);
+    const propertyTags = explorePropertyTags(route);
     const responses = exploreResponses(route);
+    const security = exploreSecurity(route);
+    const parameters = exploreParameters(route);
 
-    const operation: OperationObject = {
-      tags: tags.length > 0 ? tags : [controllerClassName], // fallback to controller name
-      responses: Object.keys(responses).length ? responses : {
-        "200": {
-          description: "",
-        },
+    operation.tags = [...(operation.tags || []), ...classTags, ...propertyTags];
+
+    if (security.length) {
+      operation.security = security;
+    }
+
+    const defaultResponse = {
+      '200': {
+        description: '',
       },
     };
+
+    // still no tags defined, fallback to class name
+    operation.tags = operation.tags && operation.tags.length
+      ? operation.tags
+      : [controllerClassName];
+
+    operation.responses = Object.keys(responses).length
+      ? responses
+      : defaultResponse;
 
     // @ts-ignore: Object is possibly 'null'.
     operation.parameters = [] as ParameterObject[];
@@ -126,8 +142,8 @@ export class AlosaurOpenApiBuilder<T> {
           operation.parameters.push({
             // @ts-ignore: Object is possibly 'null'.
             name: param.name,
-            in: "query",
-            schema: { type: "string" },
+            in: 'query',
+            schema: { type: 'string' },
           });
           break;
 
@@ -137,8 +153,8 @@ export class AlosaurOpenApiBuilder<T> {
             // @ts-ignore: Object is possibly 'null'.
             name: param.name,
             required: true,
-            in: "path",
-            schema: { type: "string" },
+            in: 'path',
+            schema: { type: 'string' },
           });
           break;
 
@@ -147,8 +163,8 @@ export class AlosaurOpenApiBuilder<T> {
           operation.parameters.push({
             // @ts-ignore: Object is possibly 'null'.
             name: param.name,
-            in: "cookie",
-            schema: { type: "string" },
+            in: 'cookie',
+            schema: { type: 'string' },
           });
           break;
         case ParamType.Body:
@@ -158,7 +174,7 @@ export class AlosaurOpenApiBuilder<T> {
             operation.requestBody = {
               required: true,
               content: {
-                "application/json": {
+                'application/json': {
                   schema: {
                     $ref: GetShemeLinkAndRegister(param.transform.name),
                   },
@@ -167,6 +183,22 @@ export class AlosaurOpenApiBuilder<T> {
             };
           }
           break;
+      }
+    });
+
+    // parameters override from alosaur-openapi decorators
+    parameters.forEach((param) => {
+      // @ts-ignore: Object is possibly 'null'.
+      const index = operation.parameters.findIndex((p: ParameterObject) =>
+        p.name === param.name && p.in === param.in
+      );
+      // if found, overwrite, else push
+      if (index !== -1) {
+        // @ts-ignore: Object is possibly 'null'.
+        operation.parameters[index] = param;
+      } else {
+        // @ts-ignore: Object is possibly 'null'.
+        operation.parameters.push(param);
       }
     });
 
@@ -195,6 +227,94 @@ export class AlosaurOpenApiBuilder<T> {
     return this;
   }
 
+  /**
+   * A generic security scheme definition for those cannot be easily described, for example apiKey
+   *
+   * You need to decorate your controller or action using @ApiSecurity() decorator
+   * to specify where to apply this scheme
+   *
+   * @example
+   * // builder
+   * AlosaurOpenApiBuilder
+   *  .create()
+   *  .addSecurityScheme('app_api_key', {
+   *    type: 'apiKey',
+   *    in: 'header',
+   *    name: 'X-API-Key',
+   *  });
+   *
+   * // controller
+   * ＠ApiSecurity('app_api_key')
+   * ＠Get('/cat)
+   * async getCat() {}
+   *
+   * @link https://swagger.io/docs/specification/authentication/
+   *
+   * @param id unique id for security scheme
+   * @param scheme security scheme specification
+   *
+   * @returns AlosaurOpenApiBuilder
+   */
+  public addSecurityScheme(id: string, scheme: SecuritySchemeObject) {
+    this.builder.addSecurityScheme(id, scheme);
+    return this;
+  }
+
+  /**
+   * Adds bearer auth scheme to openapi spec
+   *
+   * You need to decorate your controller or action using @ApiBeaterAuth() decorator
+   * to specify where to apply this scheme
+   *
+   * @link https://swagger.io/docs/specification/authentication/bearer-authentication/
+   *
+   * @returns AlosaurOpenApiBuilder
+   */
+  public addBearerAuth() {
+    this.builder.addSecurityScheme('bearer', {
+      type: 'http',
+      scheme: 'bearer',
+      bearerFormat: 'JWT',
+    });
+    return this;
+  }
+
+  /**
+   * Adds basic auth scheme to openapi spec
+   *
+   * You need to decorate your controller or action using @ApiBasicAuth() decorator
+   * to specify where to apply this scheme
+   *
+   * @link https://swagger.io/docs/specification/authentication/basic-authentication/
+   *
+   * @returns AlosaurOpenApiBuilder
+   */
+  public addBasicAuth() {
+    this.builder.addSecurityScheme('basic', {
+      type: 'http',
+      scheme: 'basic',
+    });
+    return this;
+  }
+
+  public addOAuth2(option: SecuritySchemeObject = { type: 'oauth2' }) {
+    this.builder.addSecurityScheme('oauth2', {
+      flows: {},
+      ...option,
+      type: option.type || 'oauth2',
+    });
+    return this;
+  }
+
+  public addCookieAuth(name = 'connect.sid') {
+    this.builder.addSecurityScheme('cookie', {
+      type: 'apiKey',
+      in: 'cookie',
+      name,
+    });
+    return this;
+  }
+
   public addDenoDocs(docs: any): AlosaurOpenApiBuilder<T> {
     this.denoDocs = docs;
     this.namesDenoDocMap = getParsedNames(docs);
@@ -206,7 +326,7 @@ export class AlosaurOpenApiBuilder<T> {
     const namesSets = getOpenApiMetadataArgsStorage().usableClassNamesSet;
 
     if (!this.namesDenoDocMap) {
-      throw new Error("Run addDenoDocs before start scheme components!");
+      throw new Error('Run addDenoDocs before start scheme components!');
     }
 
     this.namesDenoDocMap!.classes.forEach((classObj) => {
@@ -241,5 +361,5 @@ export class AlosaurOpenApiBuilder<T> {
  */
 function GetShemeLinkAndRegister(name: string): string {
   getOpenApiMetadataArgsStorage().usableClassNamesSet.add(name);
-  return "#/components/schemas/" + name;
+  return '#/components/schemas/' + name;
 }

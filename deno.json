@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "emitDecoratorMetadata": true
+  },
+  "fmt": {
+    "files": {
+      "include": ["./"]
+    },
+    "options": {
+      "useTabs": false,
+      "lineWidth": 80,
+      "indentWidth": 2,
+      "singleQuote": true,
+      "proseWrap": "preserve"
+    }
+  },
+  "imports": {
+    "alosaur-openapi": "./mod.ts",
+    "alosaur": "https://deno.land/x/alosaur@v0.38.0/mod.ts"
+  },
+  "tasks": {}
+}
