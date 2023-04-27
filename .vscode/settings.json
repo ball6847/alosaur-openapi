@@ -6,5 +6,8 @@
     "alosaur",
     "midash",
     "openapi"
-  ]
+  ],
+  "[typescript]": {
+    "editor.defaultFormatter": "denoland.vscode-deno"
+  }
 }

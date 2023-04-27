@@ -1,15 +1,15 @@
-import { App, Area, Controller, Get } from "alosaur";
-import { ApiBearerAuth, OpenApiMiddleware } from "alosaur-openapi";
+import { App, Area, Controller, Get } from 'alosaur';
+import { ApiBearerAuth, OpenApiMiddleware } from 'alosaur-openapi';
 
 // -------------------------------------------------------------------
 
-@Controller("/api/example")
+@Controller('/api/example')
 class ExampleController {
   @ApiBearerAuth()
-  @Get("/hello")
+  @Get('/hello')
   hello() {
     return {
-      message: "Hello World",
+      message: 'Hello World',
     };
   }
 }
@@ -26,8 +26,8 @@ const app = new App({
 });
 
 const openapi = {
-  title: "@ApiBearerAuth() example",
+  title: '@ApiBearerAuth() example',
 };
 
-app.use(new RegExp("^/api-docs"), new OpenApiMiddleware(openapi));
+app.use(new RegExp('^/api-docs'), new OpenApiMiddleware(openapi));
 app.listen({ port: 3000 });

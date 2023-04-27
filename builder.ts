@@ -22,12 +22,12 @@ import {
   registerControllers,
   RouteMetadata,
   ServerObject,
-} from "./deps/alosaur.ts";
-import { exploreOperation } from "./explorer/operation.ts";
-import { exploreResponses } from "./explorer/responses.ts";
-import { exploreSecurity } from "./explorer/security.ts";
-import { exploreClassTags, explorePropertyTags } from "./explorer/tags.ts";
-import { buildSchemaObject } from "./explorer/utils/schema_object.ts";
+} from './deps/alosaur.ts';
+import { exploreOperation } from './explorer/operation.ts';
+import { exploreResponses } from './explorer/responses.ts';
+import { exploreSecurity } from './explorer/security.ts';
+import { exploreClassTags, explorePropertyTags } from './explorer/tags.ts';
+import { buildSchemaObject } from './explorer/utils/schema_object.ts';
 
 /**
  * For testing this builder use this editor:
@@ -62,12 +62,12 @@ export class AlosaurOpenApiBuilder<T> {
         // '/app/home/test/:id/:name/detail' => '/app/home/test/{id}/{name}/detail'
         const openApiRoute: string = route.route.replace(
           /:[A-Za-z1-9]+/g,
-          (m) => `{${m.substr(1)}}`
+          (m) => `{${m.substr(1)}}`,
         );
 
         this.builder.addPath(openApiRoute, this.getPathItem(route));
       },
-      false
+      false,
     );
 
     return this;
@@ -77,12 +77,12 @@ export class AlosaurOpenApiBuilder<T> {
     return this.builder.getSpec();
   }
 
-  public saveToFile(path = "./openapi.json"): AlosaurOpenApiBuilder<T> {
+  public saveToFile(path = './openapi.json'): AlosaurOpenApiBuilder<T> {
     Deno.writeTextFileSync(path, JSON.stringify(this.getSpec()));
     return this;
   }
 
-  public saveDenoDocs(path = "./docs.json"): AlosaurOpenApiBuilder<T> {
+  public saveDenoDocs(path = './docs.json'): AlosaurOpenApiBuilder<T> {
     Deno.writeTextFileSync(path, JSON.stringify(this.denoDocs));
     return this;
   }
@@ -111,16 +111,15 @@ export class AlosaurOpenApiBuilder<T> {
     operation.tags = [...(operation.tags || []), ...classTags, ...propertyTags];
 
     const defaultResponse = {
-      "200": {
-        description: "",
+      '200': {
+        description: '',
       },
     };
 
     // still no tags defined, fallback to class name
-    operation.tags =
-      operation.tags && operation.tags.length
-        ? operation.tags
-        : [controllerClassName];
+    operation.tags = operation.tags && operation.tags.length
+      ? operation.tags
+      : [controllerClassName];
 
     operation.responses = Object.keys(responses).length
       ? responses
@@ -137,8 +136,8 @@ export class AlosaurOpenApiBuilder<T> {
           operation.parameters.push({
             // @ts-ignore: Object is possibly 'null'.
             name: param.name,
-            in: "query",
-            schema: { type: "string" },
+            in: 'query',
+            schema: { type: 'string' },
           });
           break;
 
@@ -148,8 +147,8 @@ export class AlosaurOpenApiBuilder<T> {
             // @ts-ignore: Object is possibly 'null'.
             name: param.name,
             required: true,
-            in: "path",
-            schema: { type: "string" },
+            in: 'path',
+            schema: { type: 'string' },
           });
           break;
 
@@ -158,8 +157,8 @@ export class AlosaurOpenApiBuilder<T> {
           operation.parameters.push({
             // @ts-ignore: Object is possibly 'null'.
             name: param.name,
-            in: "cookie",
-            schema: { type: "string" },
+            in: 'cookie',
+            schema: { type: 'string' },
           });
           break;
         case ParamType.Body:
@@ -169,7 +168,7 @@ export class AlosaurOpenApiBuilder<T> {
             operation.requestBody = {
               required: true,
               content: {
-                "application/json": {
+                'application/json': {
                   schema: {
                     $ref: GetShemeLinkAndRegister(param.transform.name),
                   },
@@ -217,7 +216,7 @@ export class AlosaurOpenApiBuilder<T> {
     const namesSets = getOpenApiMetadataArgsStorage().usableClassNamesSet;
 
     if (!this.namesDenoDocMap) {
-      throw new Error("Run addDenoDocs before start scheme components!");
+      throw new Error('Run addDenoDocs before start scheme components!');
     }
 
     this.namesDenoDocMap!.classes.forEach((classObj) => {
@@ -252,5 +251,5 @@ export class AlosaurOpenApiBuilder<T> {
  */
 function GetShemeLinkAndRegister(name: string): string {
   getOpenApiMetadataArgsStorage().usableClassNamesSet.add(name);
-  return "#/components/schemas/" + name;
+  return '#/components/schemas/' + name;
 }

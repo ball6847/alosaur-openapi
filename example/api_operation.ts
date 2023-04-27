@@ -1,9 +1,9 @@
-import { App, Area, Controller, Get } from "alosaur";
-import { ApiOperation, OpenApiMiddleware } from "alosaur-openapi";
+import { App, Area, Controller, Get } from 'alosaur';
+import { ApiOperation, OpenApiMiddleware } from 'alosaur-openapi';
 
 // -------------------------------------------------------------------
 
-const codeDelim = "```";
+const codeDelim = '```';
 
 const doc = `
 This api operation returns a **hello world** message
@@ -16,17 +16,17 @@ ${codeDelim}
 Link should work - [Github](https://github.com/)
 `;
 
-@Controller("/api/example")
+@Controller('/api/example')
 class ExampleController {
   @ApiOperation({
-    summary: "says hello to the world",
-    tags: ["Example"],
+    summary: 'says hello to the world',
+    tags: ['Example'],
     description: doc,
   })
-  @Get("/hello")
+  @Get('/hello')
   hello() {
     return {
-      message: "Hello World",
+      message: 'Hello World',
     };
   }
 }
@@ -43,8 +43,8 @@ const app = new App({
 });
 
 const openapi = {
-  title: "@ApiOperation() example",
+  title: '@ApiOperation() example',
 };
 
-app.use(new RegExp("^/api-docs"), new OpenApiMiddleware(openapi));
+app.use(new RegExp('^/api-docs'), new OpenApiMiddleware(openapi));
 app.listen({ port: 3000 });
