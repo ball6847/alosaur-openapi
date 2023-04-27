@@ -28,7 +28,7 @@ export function exploreClassTags(route: RouteMetadata): string[] {
 export function explorePropertyTags(route: RouteMetadata): string[] {
   const descriptor = Object.getOwnPropertyDescriptor(
     route.actionMetadata.object,
-    route.action,
+    route.action
   );
   if (!descriptor) {
     return [];
@@ -36,15 +36,30 @@ export function explorePropertyTags(route: RouteMetadata): string[] {
   return Reflect.getMetadata(DECORATORS.API_TAGS, descriptor.value) ?? [];
 }
 
+export function exploreOperation(route: RouteMetadata) {
+  const descriptor = Object.getOwnPropertyDescriptor(
+    route.actionMetadata.object,
+    route.action
+  );
+  if (!descriptor) {
+    return {};
+  }
+  const metadata = Reflect.getMetadata(
+    DECORATORS.API_OPERATION,
+    descriptor.value
+  );
+  return metadata ?? {};
+}
+
 export function exploreResponses(route: RouteMetadata) {
   // controller
   const classResponses =
     Reflect.getMetadata(DECORATORS.API_RESPONSE, route.target.constructor) ??
-      {};
+    {};
   // action
   const descriptor = Object.getOwnPropertyDescriptor(
     route.actionMetadata.object,
-    route.action,
+    route.action
   );
   const propertyResponses = descriptor
     ? Reflect.getMetadata(DECORATORS.API_RESPONSE, descriptor.value) ?? {}
@@ -92,12 +107,12 @@ export function buildSchemaObject(ctor: Function) {
 
 function buildSchemaProperty(
   instance: any,
-  property: string,
+  property: string
 ): SchemaObject | undefined {
   let prop: ApiPropertyMetadata = Reflect.getMetadata(
     DECORATORS.API_MODEL_PROPERTIES,
     instance,
-    property,
+    property
   );
   if (!prop) {
     return undefined;

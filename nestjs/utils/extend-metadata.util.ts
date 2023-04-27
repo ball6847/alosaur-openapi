@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any ban-types
-import { Reflect } from "../../deps/alosaur.ts";
+import { Reflect } from '../../deps/alosaur.ts';
 
 export function extendMetadata<T extends Record<string, any>[] = any[]>(
   metadata: T,

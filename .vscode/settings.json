@@ -1,4 +1,10 @@
 {
   "deno.enable": true,
-  "deno.unstable": true
+  "deno.lint": true,
+  "deno.unstable": true,
+  "cSpell.words": [
+    "alosaur",
+    "midash",
+    "openapi"
+  ]
 }

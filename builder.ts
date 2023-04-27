@@ -26,6 +26,7 @@ import {
 import {
   buildSchemaObject,
   exploreClassTags,
+  exploreOperation,
   explorePropertyTags,
   exploreResponses,
 } from "./route_metadata_explorer.ts";
@@ -63,12 +64,12 @@ export class AlosaurOpenApiBuilder<T> {
         // '/app/home/test/:id/:name/detail' => '/app/home/test/{id}/{name}/detail'
         const openApiRoute: string = route.route.replace(
           /:[A-Za-z1-9]+/g,
-          (m) => `{${m.substr(1)}}`,
+          (m) => `{${m.substr(1)}}`
         );
 
         this.builder.addPath(openApiRoute, this.getPathItem(route));
       },
-      false,
+      false
     );
 
     return this;
@@ -101,19 +102,33 @@ export class AlosaurOpenApiBuilder<T> {
 
     const controllerClassName: string = route.target.constructor.name;
 
-    // explore tags from @ApiTags() decorator
-    const tags = [...exploreClassTags(route), ...explorePropertyTags(route)];
+    const operation: OperationObject = exploreOperation(route);
+
+    operation.tags = [
+      // base tags from @ApiOperation() decorator
+      ...(operation.tags || []),
+      // explore more tags from @ApiTags() decorator
+      ...exploreClassTags(route),
+      ...explorePropertyTags(route),
+    ];
+
+    const defaultResponse = {
+      "200": {
+        description: "",
+      },
+    };
 
     const responses = exploreResponses(route);
 
-    const operation: OperationObject = {
-      tags: tags.length > 0 ? tags : [controllerClassName], // fallback to controller name
-      responses: Object.keys(responses).length ? responses : {
-        "200": {
-          description: "",
-        },
-      },
-    };
+    // still no tags defined, fallback to class name
+    operation.tags =
+      operation.tags && operation.tags.length
+        ? operation.tags
+        : [controllerClassName];
+
+    operation.responses = Object.keys(responses).length
+      ? responses
+      : defaultResponse;
 
     // @ts-ignore: Object is possibly 'null'.
     operation.parameters = [] as ParameterObject[];

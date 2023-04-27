@@ -1,12 +1,12 @@
-import { AlosaurOpenApiBuilder } from "./builder.ts";
+import { AlosaurOpenApiBuilder } from './builder.ts';
 import {
   AlosaurRequest,
   Content,
   HttpContext,
   MiddlewareTarget,
   Redirect,
-} from "./deps/alosaur.ts";
-import { generateHTML, swaggerInit } from "./swagger_ui.ts";
+} from './deps/alosaur.ts';
+import { generateHTML, swaggerInit } from './swagger_ui.ts';
 
 type OpenApiMiddlewareOptions = {
   title?: string;
@@ -18,17 +18,17 @@ export class OpenApiMiddleware implements MiddlewareTarget<unknown> {
   constructor(private options?: OpenApiMiddlewareOptions) {}
 
   onPreRequest(context: HttpContext<unknown>) {
-    if (context.request.url.endsWith("/swagger.json")) {
+    if (context.request.url.endsWith('/swagger.json')) {
       const swaggerDoc = this.getSwaggerDoc(context.request);
       context.response.result = Content(swaggerDoc, 200);
-    } else if (context.request.url.endsWith("/swagger-ui-init.js")) {
+    } else if (context.request.url.endsWith('/swagger-ui-init.js')) {
       context.response.result = Content(
         swaggerInit,
         200,
-        new Headers({ "Content-Type": "text/javascript" }),
+        new Headers({ 'Content-Type': 'text/javascript' }),
       );
-    } else if (!context.request.url.endsWith("/")) {
-      context.response.result = Redirect(context.request.url.concat("/"));
+    } else if (!context.request.url.endsWith('/')) {
+      context.response.result = Redirect(context.request.url.concat('/'));
     } else {
       const swaggerDoc = this.getSwaggerDoc(context.request);
       const html = generateHTML(swaggerDoc);

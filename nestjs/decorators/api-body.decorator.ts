@@ -1,22 +1,22 @@
 // deno-lint-ignore-file ban-types no-explicit-any
-import { omit } from "../../deps/midash.ts";
+import { omit } from '../../deps/midash.ts';
 import {
   ExamplesObject,
   ReferenceObject,
   RequestBodyObject,
   SchemaObject,
-} from "../interfaces/open-api-spec.interface.ts";
-import { Type } from "../interfaces/type.interface.ts";
-import { SwaggerEnumType } from "../types/swagger-enum.type.ts";
+} from '../interfaces/open-api-spec.interface.ts';
+import { Type } from '../interfaces/type.interface.ts';
+import { SwaggerEnumType } from '../types/swagger-enum.type.ts';
 import {
   addEnumArraySchema,
   addEnumSchema,
   isEnumArray,
   isEnumDefined,
-} from "../utils/enum.utils.ts";
-import { createParamDecorator, getTypeIsArrayTuple } from "./helpers.ts";
+} from '../utils/enum.utils.ts';
+import { createParamDecorator, getTypeIsArrayTuple } from './helpers.ts';
 
-type RequestBodyOptions = Omit<RequestBodyObject, "content">;
+type RequestBodyOptions = Omit<RequestBodyObject, 'content'>;
 
 interface ApiBodyMetadata extends RequestBodyOptions {
   type?: Type<unknown> | Function | [Function] | string;
@@ -42,8 +42,8 @@ export function ApiBody(options: ApiBodyOptions): MethodDecorator {
     (options as ApiBodyMetadata).isArray as any,
   );
   const param: ApiBodyMetadata & Record<string, any> = {
-    in: "body",
-    ...omit(options, ["enum"]),
+    in: 'body',
+    ...omit(options, ['enum']),
     type,
     isArray,
   };

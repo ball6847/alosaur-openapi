@@ -1,9 +1,9 @@
 // deno-lint-ignore-file no-explicit-any ban-types no-unused-vars
-import { Reflect } from "../../deps/alosaur.ts";
-import { pickBy } from "../../deps/midash.ts";
-import { DECORATORS } from "../constants.ts";
+import { Reflect } from '../../deps/alosaur.ts';
+import { pickBy } from '../../deps/midash.ts';
+import { DECORATORS } from '../constants.ts';
 
-export const METADATA_FACTORY_NAME = "_OPENAPI_METADATA_FACTORY";
+export const METADATA_FACTORY_NAME = '_OPENAPI_METADATA_FACTORY';
 
 export function createMethodDecorator<T = any>(
   metakey: string,
@@ -66,7 +66,7 @@ export function createPropertyDecorator<T extends Record<string, any> = any>(
       const type =
         // @ts-ignore as this is very denymic
         target?.constructor?.[METADATA_FACTORY_NAME]?.()[propKey]?.type ??
-          Reflect.getMetadata("design:type", target, propKey);
+          Reflect.getMetadata('design:type', target, propKey);
 
       Reflect.defineMetadata(
         metakey,

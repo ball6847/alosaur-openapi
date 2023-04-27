@@ -1,11 +1,11 @@
-import { OpenAPIObject } from "../interfaces/mod.ts";
+import { OpenAPIObject } from '../interfaces/mod.ts';
 
-export const buildDocumentBase = (): Omit<OpenAPIObject, "paths"> => ({
-  openapi: "3.0.0",
+export const buildDocumentBase = (): Omit<OpenAPIObject, 'paths'> => ({
+  openapi: '3.0.0',
   info: {
-    title: "",
-    description: "",
-    version: "1.0.0",
+    title: '',
+    description: '',
+    version: '1.0.0',
     contact: {},
   },
   tags: [],

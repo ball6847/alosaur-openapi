@@ -1,19 +1,19 @@
 // deno-lint-ignore-file ban-types no-explicit-any
-import { pickBy } from "../../deps/midash.ts";
-import { DECORATORS } from "../constants.ts";
+import { pickBy } from '../../deps/midash.ts';
+import { DECORATORS } from '../constants.ts';
 import {
   ParameterLocation,
   ParameterObject,
-} from "../interfaces/open-api-spec.interface.ts";
-import { SwaggerEnumType } from "../types/swagger-enum.type.ts";
-import { getEnumType, getEnumValues } from "../utils/enum.utils.ts";
-import { createClassDecorator, createParamDecorator } from "./helpers.ts";
+} from '../interfaces/open-api-spec.interface.ts';
+import { SwaggerEnumType } from '../types/swagger-enum.type.ts';
+import { getEnumType, getEnumValues } from '../utils/enum.utils.ts';
+import { createClassDecorator, createParamDecorator } from './helpers.ts';
 
-export interface ApiHeaderOptions extends Omit<ParameterObject, "in"> {
+export interface ApiHeaderOptions extends Omit<ParameterObject, 'in'> {
   enum?: SwaggerEnumType;
 }
 
-const defaultHeaderOptions = { name: "" } satisfies ApiHeaderOptions;
+const defaultHeaderOptions = { name: '' } satisfies ApiHeaderOptions;
 
 export function ApiHeader(
   options: ApiHeaderOptions,
@@ -23,12 +23,12 @@ export function ApiHeader(
   const param = pickBy<OPT[K_OPT]>(
     {
       name: options.name == null ? defaultHeaderOptions.name : options.name,
-      in: "header",
+      in: 'header',
       description: options.description,
       required: options.required,
       schema: {
         ...(options.schema || {}),
-        type: "string",
+        type: 'string',
       },
     },
     (v) => v !== undefined,

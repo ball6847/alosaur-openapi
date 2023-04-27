@@ -2,7 +2,7 @@ import {
   OpenAPIObject,
   OperationObject,
   ResponsesObject,
-} from "./open-api-spec.interface.ts";
+} from './open-api-spec.interface.ts';
 
 export interface DenormalizedDoc extends Partial<OpenAPIObject> {
   root?: {

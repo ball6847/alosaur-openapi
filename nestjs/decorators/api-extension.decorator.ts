@@ -1,12 +1,12 @@
 // deno-lint-ignore-file no-explicit-any
-import { clone } from "../../deps/midash.ts";
-import { DECORATORS } from "../constants.ts";
-import { createMixedDecorator } from "./helpers.ts";
+import { clone } from '../../deps/midash.ts';
+import { DECORATORS } from '../constants.ts';
+import { createMixedDecorator } from './helpers.ts';
 
 export function ApiExtension(extensionKey: string, extensionProperties: any) {
-  if (!extensionKey.startsWith("x-")) {
+  if (!extensionKey.startsWith('x-')) {
     throw new Error(
-      "Extension key is not prefixed. Please ensure you prefix it with `x-`.",
+      'Extension key is not prefixed. Please ensure you prefix it with `x-`.',
     );
   }
 
