@@ -15,6 +15,7 @@ import {
   OpenApiBuilder,
   OpenAPIObject,
   OperationObject,
+  ParameterObject,
   ParamType,
   ParsedNamesDocMap,
   PathItemObject,
@@ -25,6 +26,7 @@ import {
   ServerObject,
 } from './deps/alosaur.ts';
 import { exploreOperation } from './explorer/operation.ts';
+import { exploreParameters } from './explorer/parameters.ts';
 import { exploreResponses } from './explorer/responses.ts';
 import { exploreSecurity } from './explorer/security.ts';
 import { exploreClassTags, explorePropertyTags } from './explorer/tags.ts';
@@ -106,6 +108,7 @@ export class AlosaurOpenApiBuilder<T> {
     const propertyTags = explorePropertyTags(route);
     const responses = exploreResponses(route);
     const security = exploreSecurity(route);
+    const parameters = exploreParameters(route);
 
     operation.tags = [...(operation.tags || []), ...classTags, ...propertyTags];
 
@@ -180,6 +183,22 @@ export class AlosaurOpenApiBuilder<T> {
             };
           }
           break;
+      }
+    });
+
+    // parameters override from alosaur-openapi decorators
+    parameters.forEach((param) => {
+      // @ts-ignore: Object is possibly 'null'.
+      const index = operation.parameters.findIndex((p: ParameterObject) =>
+        p.name === param.name && p.in === param.in
+      );
+      // if found, overwrite, else push
+      if (index !== -1) {
+        // @ts-ignore: Object is possibly 'null'.
+        operation.parameters[index] = param;
+      } else {
+        // @ts-ignore: Object is possibly 'null'.
+        operation.parameters.push(param);
       }
     });
 
@@ -274,6 +293,24 @@ export class AlosaurOpenApiBuilder<T> {
     this.builder.addSecurityScheme('basic', {
       type: 'http',
       scheme: 'basic',
+    });
+    return this;
+  }
+
+  public addOAuth2(option: SecuritySchemeObject = { type: 'oauth2' }) {
+    this.builder.addSecurityScheme('oauth2', {
+      flows: {},
+      ...option,
+      type: option.type || 'oauth2',
+    });
+    return this;
+  }
+
+  public addCookieAuth(name = 'connect.sid') {
+    this.builder.addSecurityScheme('cookie', {
+      type: 'apiKey',
+      in: 'cookie',
+      name,
     });
     return this;
   }

@@ -100,7 +100,7 @@ function isPrimitiveType(type: unknown) {
   return type === String || type === Number || type === Boolean;
 }
 
-function getPropertyType(type: unknown) {
+export function getPropertyType(type: unknown) {
   switch (type) {
     case String:
       return 'string';
