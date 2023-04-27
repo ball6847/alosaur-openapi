@@ -23,13 +23,11 @@ import {
   RouteMetadata,
   ServerObject,
 } from "./deps/alosaur.ts";
-import {
-  buildSchemaObject,
-  exploreClassTags,
-  exploreOperation,
-  explorePropertyTags,
-  exploreResponses,
-} from "./route_metadata_explorer.ts";
+import { exploreOperation } from "./explorer/operation.ts";
+import { exploreResponses } from "./explorer/responses.ts";
+import { exploreSecurity } from "./explorer/security.ts";
+import { exploreClassTags, explorePropertyTags } from "./explorer/tags.ts";
+import { buildSchemaObject } from "./explorer/utils/schema_object.ts";
 
 /**
  * For testing this builder use this editor:
@@ -103,22 +101,20 @@ export class AlosaurOpenApiBuilder<T> {
     const controllerClassName: string = route.target.constructor.name;
 
     const operation: OperationObject = exploreOperation(route);
+    const classTags = exploreClassTags(route);
+    const propertyTags = explorePropertyTags(route);
+    const responses = exploreResponses(route);
+    const security = exploreSecurity(route);
 
-    operation.tags = [
-      // base tags from @ApiOperation() decorator
-      ...(operation.tags || []),
-      // explore more tags from @ApiTags() decorator
-      ...exploreClassTags(route),
-      ...explorePropertyTags(route),
-    ];
+    console.log(security);
+
+    operation.tags = [...(operation.tags || []), ...classTags, ...propertyTags];
 
     const defaultResponse = {
       "200": {
         description: "",
       },
     };
-
-    const responses = exploreResponses(route);
 
     // still no tags defined, fallback to class name
     operation.tags =
