@@ -8,14 +8,14 @@ import {
 } from './deps/alosaur.ts';
 import { generateHTML, swaggerInit } from './swagger_ui.ts';
 
-type OpenApiMiddlewareOptions = {
-  title?: string;
-  description?: string;
-  version?: string;
-};
-
 export class OpenApiMiddleware implements MiddlewareTarget<unknown> {
-  constructor(private options?: OpenApiMiddlewareOptions) {}
+  private builder: AlosaurOpenApiBuilder<unknown>;
+
+  constructor(builder?: AlosaurOpenApiBuilder<unknown>) {
+    this.builder = builder
+      ? builder
+      : AlosaurOpenApiBuilder.create({ areas: [] });
+  }
 
   onPreRequest(context: HttpContext<unknown>) {
     if (context.request.url.endsWith('/swagger.json')) {
@@ -42,22 +42,16 @@ export class OpenApiMiddleware implements MiddlewareTarget<unknown> {
     return null;
   }
 
+  getBuilder() {
+    return this.builder;
+  }
+
   getSwaggerDoc(req: AlosaurRequest) {
-    let spec = AlosaurOpenApiBuilder.create({ areas: [] })
+    return this.builder
       .registerControllers()
       .addServer({
         url: new URL(req.url).origin,
-      });
-    if (this.options?.title) {
-      spec = spec.addTitle(this.options.title);
-    }
-    if (this.options?.description) {
-      spec = spec.addDescription(this.options.description);
-    }
-    if (this.options?.version) {
-      spec = spec.addVersion(this.options.version);
-    }
-
-    return spec.getSpec();
+      })
+      .getSpec();
   }
 }

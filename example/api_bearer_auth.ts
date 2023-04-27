@@ -1,5 +1,9 @@
 import { App, Area, Controller, Get } from 'alosaur';
-import { ApiBearerAuth, OpenApiMiddleware } from 'alosaur-openapi';
+import {
+  AlosaurOpenApiBuilder,
+  ApiBearerAuth,
+  OpenApiMiddleware,
+} from 'alosaur-openapi';
 
 // -------------------------------------------------------------------
 
@@ -25,9 +29,12 @@ const app = new App({
   areas: [ExampleArea],
 });
 
-const openapi = {
-  title: '@ApiBearerAuth() example',
-};
+const openapi = AlosaurOpenApiBuilder
+  .create({ areas: [] })
+  .addTitle('Example')
+  .addVersion('1.0.0')
+  .addDescription('Example on how to use @ApiBearerAuth() decorator')
+  .addBearerAuth();
 
 app.use(new RegExp('^/api-docs'), new OpenApiMiddleware(openapi));
 app.listen({ port: 3000 });

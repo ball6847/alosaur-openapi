@@ -21,6 +21,7 @@ import {
   registerAreas,
   registerControllers,
   RouteMetadata,
+  SecuritySchemeObject,
   ServerObject,
 } from './deps/alosaur.ts';
 import { exploreOperation } from './explorer/operation.ts';
@@ -106,9 +107,11 @@ export class AlosaurOpenApiBuilder<T> {
     const responses = exploreResponses(route);
     const security = exploreSecurity(route);
 
-    console.log(security);
-
     operation.tags = [...(operation.tags || []), ...classTags, ...propertyTags];
+
+    if (security.length) {
+      operation.security = security;
+    }
 
     const defaultResponse = {
       '200': {
@@ -202,6 +205,76 @@ export class AlosaurOpenApiBuilder<T> {
 
   public addServer(server: ServerObject): AlosaurOpenApiBuilder<T> {
     this.builder.addServer(server);
+    return this;
+  }
+
+  /**
+   * A generic security scheme definition for those cannot be easily described, for example apiKey
+   *
+   * You need to decorate your controller or action using @ApiSecurity() decorator
+   * to specify where to apply this scheme
+   *
+   * @example
+   * // builder
+   * AlosaurOpenApiBuilder
+   *  .create()
+   *  .addSecurityScheme('app_api_key', {
+   *    type: 'apiKey',
+   *    in: 'header',
+   *    name: 'X-API-Key',
+   *  });
+   *
+   * // controller
+   * ＠ApiSecurity('app_api_key')
+   * ＠Get('/cat)
+   * async getCat() {}
+   *
+   * @link https://swagger.io/docs/specification/authentication/
+   *
+   * @param id unique id for security scheme
+   * @param scheme security scheme specification
+   *
+   * @returns AlosaurOpenApiBuilder
+   */
+  public addSecurityScheme(id: string, scheme: SecuritySchemeObject) {
+    this.builder.addSecurityScheme(id, scheme);
+    return this;
+  }
+
+  /**
+   * Adds bearer auth scheme to openapi spec
+   *
+   * You need to decorate your controller or action using @ApiBeaterAuth() decorator
+   * to specify where to apply this scheme
+   *
+   * @link https://swagger.io/docs/specification/authentication/bearer-authentication/
+   *
+   * @returns AlosaurOpenApiBuilder
+   */
+  public addBearerAuth() {
+    this.builder.addSecurityScheme('bearer', {
+      type: 'http',
+      scheme: 'bearer',
+      bearerFormat: 'JWT',
+    });
+    return this;
+  }
+
+  /**
+   * Adds basic auth scheme to openapi spec
+   *
+   * You need to decorate your controller or action using @ApiBasicAuth() decorator
+   * to specify where to apply this scheme
+   *
+   * @link https://swagger.io/docs/specification/authentication/basic-authentication/
+   *
+   * @returns AlosaurOpenApiBuilder
+   */
+  public addBasicAuth() {
+    this.builder.addSecurityScheme('basic', {
+      type: 'http',
+      scheme: 'basic',
+    });
     return this;
   }
 

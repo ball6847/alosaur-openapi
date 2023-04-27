@@ -1,5 +1,9 @@
 import { App, Area, Controller, Get } from 'alosaur';
-import { ApiOperation, OpenApiMiddleware } from 'alosaur-openapi';
+import {
+  AlosaurOpenApiBuilder,
+  ApiOperation,
+  OpenApiMiddleware,
+} from 'alosaur-openapi';
 
 // -------------------------------------------------------------------
 
@@ -42,9 +46,12 @@ const app = new App({
   areas: [ExampleArea],
 });
 
-const openapi = {
-  title: '@ApiOperation() example',
-};
+const openapi = AlosaurOpenApiBuilder
+  .create({ areas: [] })
+  .addTitle('Example')
+  .addVersion('1.0.0')
+  .addDescription('Example on how to use @ApiOperation() decorator')
+  .addBearerAuth();
 
 app.use(new RegExp('^/api-docs'), new OpenApiMiddleware(openapi));
 app.listen({ port: 3000 });
