@@ -50,8 +50,16 @@ export class OpenApiMiddleware implements MiddlewareTarget<unknown> {
     return this.builder
       .registerControllers()
       .addServer({
-        url: new URL(req.url).origin,
+        url: this.getServerUrl(req),
       })
       .getSpec();
+  }
+
+  private getServerUrl(req: AlosaurRequest) {
+    const url = new URL(req.url);
+    const proto = req.headers.has('x-forwarded-proto')
+      ? `${req.headers.get('x-forwarded-proto')?.toLowerCase()}:`
+      : url.protocol;
+    return `${proto}//${url.host}`;
   }
 }
