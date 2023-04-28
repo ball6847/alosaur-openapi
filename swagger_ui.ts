@@ -78,6 +78,7 @@ const htmlTplString = `
 </html>
 `;
 
+// TODO: make persistAuthorization configurable
 const jsTplString = `
 window.onload = function() {
   // Build a system
@@ -105,7 +106,8 @@ window.onload = function() {
     plugins: [
       SwaggerUIBundle.plugins.DownloadUrl
     ],
-    layout: "StandaloneLayout"
+    layout: "StandaloneLayout",
+    persistAuthorization: true,
   }
   for (const attrname in customOptions) {
     swaggerOptions[attrname] = customOptions[attrname];
