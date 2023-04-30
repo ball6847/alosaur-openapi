@@ -1,6 +1,9 @@
+// deno-lint-ignore-file ban-types
 import { DECORATORS } from '../constants.ts';
 import { createMixedDecorator } from './helpers.ts';
 
-export function ApiConsumes(...mimeTypes: string[]) {
+type ContentTypeMap = Record<string, Function>;
+
+export function ApiConsumes(...mimeTypes: ContentTypeMap[]) {
   return createMixedDecorator(DECORATORS.API_CONSUMES, mimeTypes);
 }

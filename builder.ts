@@ -1,5 +1,4 @@
-// deno-lint-ignore-file no-explicit-any no-case-declarations no-unused-vars
-
+// deno-lint-ignore-file ban-types no-explicit-any no-unused-vars
 import {
   AppSettings,
   DenoDoc,
@@ -25,6 +24,7 @@ import {
   SecuritySchemeObject,
   ServerObject,
 } from './deps/alosaur.ts';
+import { exploreConsumes } from './explorer/consumes.ts';
 import { exploreOperation } from './explorer/operation.ts';
 import { exploreParameters } from './explorer/parameters.ts';
 import { exploreResponses } from './explorer/responses.ts';
@@ -108,6 +108,14 @@ export class AlosaurOpenApiBuilder<T> {
     const propertyTags = explorePropertyTags(route);
     const responses = exploreResponses(route);
     const security = exploreSecurity(route);
+    const consumes = exploreConsumes(route).reduce(
+      (acc: any, curr: Record<string, Function>) => {
+        const [key, value] = Object.entries(curr)[0];
+        acc[key] = value;
+        return acc;
+      },
+      {},
+    );
     const parameters = exploreParameters(route);
 
     operation.tags = [...(operation.tags || []), ...classTags, ...propertyTags];
@@ -123,13 +131,9 @@ export class AlosaurOpenApiBuilder<T> {
     };
 
     // still no tags defined, fallback to class name
-    operation.tags = operation.tags && operation.tags.length
-      ? operation.tags
-      : [controllerClassName];
+    operation.tags = operation.tags && operation.tags.length ? operation.tags : [controllerClassName];
 
-    operation.responses = Object.keys(responses).length
-      ? responses
-      : defaultResponse;
+    operation.responses = Object.keys(responses).length ? responses : defaultResponse;
 
     // @ts-ignore: Object is possibly 'null'.
     operation.parameters = [] as ParameterObject[];
@@ -168,18 +172,36 @@ export class AlosaurOpenApiBuilder<T> {
           });
           break;
         case ParamType.Body:
-          const schema = buildSchemaObject(param.transform);
-          if (schema) {
-            this.builder.addSchema(param.transform.name, schema);
-            operation.requestBody = {
-              required: true,
-              content: {
-                'application/json': {
-                  schema: {
-                    $ref: GetShemeLinkAndRegister(param.transform.name),
+          if (param.transform) {
+            const schema = buildSchemaObject(param.transform);
+            if (schema) {
+              this.builder.addSchema(param.transform.name, schema);
+              operation.requestBody = {
+                required: true,
+                content: {
+                  'application/json': {
+                    schema: {
+                      $ref: GetShemeLinkAndRegister(param.transform.name),
+                    },
                   },
                 },
-              },
+              };
+            }
+          } //
+          else if (Object.keys(consumes).length) {
+            operation.requestBody = {
+              required: true,
+              content: Object.entries(consumes).reduce(
+                (acc: any, curr: any) => {
+                  const [key, value] = curr;
+                  const schema = buildSchemaObject(value);
+                  if (schema) {
+                    acc[key] = { schema };
+                  }
+                  return acc;
+                },
+                {},
+              ),
             };
           }
           break;
@@ -189,9 +211,7 @@ export class AlosaurOpenApiBuilder<T> {
     // parameters override from alosaur-openapi decorators
     parameters.forEach((param) => {
       // @ts-ignore: Object is possibly 'null'.
-      const index = operation.parameters.findIndex((p: ParameterObject) =>
-        p.name === param.name && p.in === param.in
-      );
+      const index = operation.parameters.findIndex((p: ParameterObject) => p.name === param.name && p.in === param.in);
       // if found, overwrite, else push
       if (index !== -1) {
         // @ts-ignore: Object is possibly 'null'.
