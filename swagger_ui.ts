@@ -36,6 +36,10 @@ const htmlTplString = `
       margin:0;
       background: #fafafa;
     }
+    /* fix bug on checkbox in formdata */
+    .swagger-ui .parameter__empty_value_toggle input[type=checkbox] {
+      width: unset;
+    }
   </style>
 </head>
 <body>
@@ -107,7 +111,7 @@ window.onload = function() {
       SwaggerUIBundle.plugins.DownloadUrl
     ],
     layout: "StandaloneLayout",
-    persistAuthorization: true,
+    persistAuthorization: true
   }
   for (const attrname in customOptions) {
     swaggerOptions[attrname] = customOptions[attrname];
