@@ -53,5 +53,5 @@ export function ApiBody(options: ApiBodyOptions): MethodDecorator {
   } else if (isEnumDefined(options)) {
     addEnumSchema(param, options);
   }
-  return createParamDecorator(param, defaultBodyMetadata);
+  return createParamDecorator(param, options);
 }

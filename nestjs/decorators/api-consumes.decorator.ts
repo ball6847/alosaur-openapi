@@ -4,6 +4,6 @@ import { createMixedDecorator } from './helpers.ts';
 
 type ContentTypeMap = Record<string, Function>;
 
-export function ApiConsumes(...mimeTypes: ContentTypeMap[]) {
+export function ApiConsumes(...mimeTypes: string[]) {
   return createMixedDecorator(DECORATORS.API_CONSUMES, mimeTypes);
 }
