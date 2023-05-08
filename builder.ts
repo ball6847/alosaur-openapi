@@ -108,14 +108,7 @@ export class AlosaurOpenApiBuilder<T> {
     const propertyTags = explorePropertyTags(route);
     const responses = exploreResponses(route);
     const security = exploreSecurity(route);
-    const consumes = exploreConsumes(route).reduce(
-      (acc: any, curr: Record<string, Function>) => {
-        const [key, value] = Object.entries(curr)[0];
-        acc[key] = value;
-        return acc;
-      },
-      {},
-    );
+    const consumes = exploreConsumes(route);
     const parameters = exploreParameters(route);
 
     operation.tags = [...(operation.tags || []), ...classTags, ...propertyTags];
@@ -131,9 +124,13 @@ export class AlosaurOpenApiBuilder<T> {
     };
 
     // still no tags defined, fallback to class name
-    operation.tags = operation.tags && operation.tags.length ? operation.tags : [controllerClassName];
+    operation.tags = operation.tags && operation.tags.length
+      ? operation.tags
+      : [controllerClassName];
 
-    operation.responses = Object.keys(responses).length ? responses : defaultResponse;
+    operation.responses = Object.keys(responses).length
+      ? responses
+      : defaultResponse;
 
     // @ts-ignore: Object is possibly 'null'.
     operation.parameters = [] as ParameterObject[];
@@ -176,42 +173,64 @@ export class AlosaurOpenApiBuilder<T> {
             const schema = buildSchemaObject(param.transform);
             if (schema) {
               this.builder.addSchema(param.transform.name, schema);
-              operation.requestBody = {
-                required: true,
-                content: {
-                  'application/json': {
-                    schema: {
-                      $ref: GetShemeLinkAndRegister(param.transform.name),
+              if (consumes.length) {
+                // body with ApiConsumes decorator
+                operation.requestBody = {
+                  required: true,
+                  content: consumes.reduce(
+                    (acc: any, consume: string) => {
+                      acc[consume] = { schema };
+                      return acc;
+                    },
+                    {},
+                  ),
+                };
+              } else {
+                // body without ApiConsumes decorator, usually @Body() param
+                operation.requestBody = {
+                  required: true,
+                  content: {
+                    'application/json': {
+                      schema: {
+                        $ref: GetShemeLinkAndRegister(param.transform.name),
+                      },
                     },
                   },
-                },
+                };
+              }
+            }
+          } else {
+            // @ApiConsumes with @ApiBody together
+            if (consumes.length && parameters.length) {
+              operation.requestBody = {
+                required: true,
+                content: consumes.reduce(
+                  (acc: any, consume: string) => {
+                    acc[consume] = {
+                      schema: parameters[0].schema,
+                    };
+                    return acc;
+                  },
+                  {},
+                ),
               };
             }
-          } //
-          else if (Object.keys(consumes).length) {
-            operation.requestBody = {
-              required: true,
-              content: Object.entries(consumes).reduce(
-                (acc: any, curr: any) => {
-                  const [key, value] = curr;
-                  const schema = buildSchemaObject(value);
-                  if (schema) {
-                    acc[key] = { schema };
-                  }
-                  return acc;
-                },
-                {},
-              ),
-            };
           }
+
           break;
       }
     });
 
     // parameters override from alosaur-openapi decorators
     parameters.forEach((param) => {
+      // @ApiBody() has been processed above in ParamType.Body
+      if (param.in === 'body') {
+        return;
+      }
       // @ts-ignore: Object is possibly 'null'.
-      const index = operation.parameters.findIndex((p: ParameterObject) => p.name === param.name && p.in === param.in);
+      const index = operation.parameters.findIndex((p: ParameterObject) =>
+        p.name === param.name && p.in === param.in
+      );
       // if found, overwrite, else push
       if (index !== -1) {
         // @ts-ignore: Object is possibly 'null'.

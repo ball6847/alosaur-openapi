@@ -4,12 +4,14 @@ import {
   Content,
   HttpContext,
   MiddlewareTarget,
+  OpenAPIObject,
   Redirect,
 } from './deps/alosaur.ts';
 import { generateHTML, swaggerInit } from './swagger_ui.ts';
 
 export class OpenApiMiddleware implements MiddlewareTarget<unknown> {
   private builder: AlosaurOpenApiBuilder<unknown>;
+  private swaggerDoc!: OpenAPIObject;
 
   constructor(builder?: AlosaurOpenApiBuilder<unknown>) {
     this.builder = builder
@@ -19,8 +21,10 @@ export class OpenApiMiddleware implements MiddlewareTarget<unknown> {
 
   onPreRequest(context: HttpContext<unknown>) {
     if (context.request.url.endsWith('/swagger.json')) {
-      const swaggerDoc = this.getSwaggerDoc(context.request);
-      context.response.result = Content(swaggerDoc, 200);
+      if (!this.swaggerDoc) {
+        this.swaggerDoc = this.getSwaggerDoc(context.request);
+      }
+      context.response.result = Content(this.swaggerDoc, 200);
     } else if (context.request.url.endsWith('/swagger-ui-init.js')) {
       context.response.result = Content(
         swaggerInit,
@@ -30,8 +34,10 @@ export class OpenApiMiddleware implements MiddlewareTarget<unknown> {
     } else if (!context.request.url.endsWith('/')) {
       context.response.result = Redirect(context.request.url.concat('/'));
     } else {
-      const swaggerDoc = this.getSwaggerDoc(context.request);
-      const html = generateHTML(swaggerDoc);
+      if (!this.swaggerDoc) {
+        this.swaggerDoc = this.getSwaggerDoc(context.request);
+      }
+      const html = generateHTML(this.swaggerDoc);
       context.response.result = Content(html, 200);
     }
 

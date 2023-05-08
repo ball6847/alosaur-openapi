@@ -4,7 +4,7 @@ import { DECORATORS } from '../nestjs/constants.ts';
 
 export function exploreConsumes(
   route: RouteMetadata,
-): Record<string, Function>[] {
+): string[] {
   const consumes = fromClass(route).concat(fromMethod(route));
   return consumes;
 }
