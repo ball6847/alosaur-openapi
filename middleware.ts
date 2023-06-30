@@ -9,14 +9,23 @@ import {
 } from './deps/alosaur.ts';
 import { generateHTML, swaggerInit } from './swagger_ui.ts';
 
+type OpenApiMiddlewareOption = {
+  builder?: AlosaurOpenApiBuilder<unknown>;
+  guessServerUrl?: boolean;
+};
+
 export class OpenApiMiddleware implements MiddlewareTarget<unknown> {
   private builder: AlosaurOpenApiBuilder<unknown>;
   private swaggerDoc!: OpenAPIObject;
+  private opt: Omit<OpenApiMiddlewareOption, 'builder'>;
 
-  constructor(builder?: AlosaurOpenApiBuilder<unknown>) {
-    this.builder = builder
-      ? builder
+  constructor(opt: OpenApiMiddlewareOption = {}) {
+    this.builder = opt.builder
+      ? opt.builder
       : AlosaurOpenApiBuilder.create({ areas: [] });
+    this.opt = {
+      guessServerUrl: Boolean(opt.guessServerUrl),
+    };
   }
 
   onPreRequest(context: HttpContext<unknown>) {
@@ -53,12 +62,13 @@ export class OpenApiMiddleware implements MiddlewareTarget<unknown> {
   }
 
   getSwaggerDoc(req: AlosaurRequest) {
-    return this.builder
-      .registerControllers()
-      .addServer({
-        url: this.getServerUrl(req),
-      })
-      .getSpec();
+    let doc = this.builder.registerControllers();
+
+    if (this.opt.guessServerUrl) {
+      doc = doc.addServer({ url: this.getServerUrl(req) });
+    }
+
+    return doc.getSpec();
   }
 
   private getServerUrl(req: AlosaurRequest) {
